@@ -6,14 +6,13 @@ container.addService('system.logger', './src/models/Logger', []);
 container.addService('=config', './src/config', []);
 container.addService('=app', app, []);
 
-
 const server = require('http').Server(app);
 container.addService('=server', server, []);
 
 /* Создаем модули с зависимостями */
-container.addService('Cache', './src/services/Cache.js', ['config']);
-container.addService('Parser', './src/services/Parser.js', ['config', 'Cache']);
-container.addService('Router', './Router.js', ['config', 'app', 'Cache']);
+container.addService('Storage', './src/services/Storage.js', ['config']);
+container.addService('Parser', './src/services/Parser.js', ['config', 'Storage']);
+container.addService('Router', './Router.js', ['config', 'app', 'Storage']);
 
 /* Запускаем модули */
 container.warming();
