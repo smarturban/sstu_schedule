@@ -1,0 +1,13 @@
+{
+  "name": "SSU_shedule",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "~4.14.0",
+    "http_request": "^0.1.2",
+    "xml2js": "^0.4.17"
+  }
+}
