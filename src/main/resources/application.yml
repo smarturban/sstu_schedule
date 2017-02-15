@@ -1,0 +1,12 @@
+ssu:
+  url: http://www.sgu.ru/exchange/schedule_ssu_4vlad.php
+  basicAuth:
+    login: somelogin
+    password: somepassword
+
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: schedule
