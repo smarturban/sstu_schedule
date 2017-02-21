@@ -2,46 +2,33 @@ package com.ssu.schedule.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.ssu.schedule.jsonview.View;
 
 import java.util.List;
 
 public class Lesson {
     @JsonIgnore
-    @JsonView(View.SCHEDULE.class)
     private String id;
 
-    @JsonView(View.SCHEDULE.class)
-    private int type = 2;
+    private String type = "Лекция";
 
-    @JsonView(View.SCHEDULE.class)
-    private int parity = 0;
-
-    @JsonView(View.SCHEDULE.class)
     @JsonProperty("subject")
     private String title;
 
-    @JsonView(View.SCHEDULE.class)
-    @JsonProperty("time_start")
-    private String timeStart;
+    private Time time;
 
-    @JsonView(View.SCHEDULE.class)
-    @JsonProperty("time_end")
-    private String timeEnd;
+    @JsonProperty("date")
+    private Day date;
 
-    @JsonView(View.SCHEDULE.class)
     private List<Teacher> teachers;
 
-    @JsonView(View.SCHEDULE.class)
-    private List<Auditory> auditories;
+    private List<Auditory> audiences;
 
-    public void setType(int type) {
+    public void setType(String type) {
         this.type = type;
     }
 
-    public void setParity(int parity) {
-        this.parity = parity;
+    public void setDate(Day date) {
+        this.date = date;
     }
 
     public void setId(String id) {
@@ -52,14 +39,6 @@ public class Lesson {
         this.title = title;
     }
 
-    public void setTimeStart(String time_start) {
-        this.timeStart = time_start;
-    }
-
-    public void setTimeEnd(String time_end) {
-        this.timeEnd = time_end;
-    }
-
     public List<Teacher> getTeachers() {
         return teachers;
     }
@@ -68,20 +47,20 @@ public class Lesson {
         this.teachers = teachers;
     }
 
-    public List<Auditory> getAuditories() {
-        return auditories;
+    public List<Auditory> getAudiences() {
+        return audiences;
     }
 
-    public void setAuditories(List<Auditory> auditories) {
-        this.auditories = auditories;
+    public void setAudiences(List<Auditory> audiences) {
+        this.audiences = audiences;
     }
 
-    public int getType() {
+    public String getType() {
         return type;
     }
 
-    public int getParity() {
-        return parity;
+    public Day getDate() {
+        return date;
     }
 
     public String getId() {
@@ -92,11 +71,11 @@ public class Lesson {
         return title;
     }
 
-    public String getTimeStart() {
-        return timeStart;
+    public Time getTime() {
+        return time;
     }
 
-    public String getTimeEnd() {
-        return timeEnd;
+    public void setTime(Time time) {
+        this.time = time;
     }
 }

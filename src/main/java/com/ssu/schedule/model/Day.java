@@ -1,32 +1,42 @@
 package com.ssu.schedule.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.ssu.schedule.jsonview.View;
-
-import java.util.List;
-
 public class Day {
-    @JsonView(View.SCHEDULE.class)
-    @JsonProperty("weekday")
-    private String id;
+    private String start = "01.09.2016";
+    private String end = "01.07.2017";
+    private int weekday;
 
-    @JsonView(View.SCHEDULE.class)
-    private List<Lesson> lessons;
+    private int week = 0;
 
-    public void setId(String id) {
-        this.id = id;
+    public void setWeekday(int weekday) {
+        this.weekday = weekday;
     }
 
-    public String getId() {
-        return id;
+    public void setWeek(int week) {
+        this.week = week;
     }
 
-    public void setLessons(List<Lesson> lessons) {
-        this.lessons = lessons;
+    public int getWeekday() {
+        return weekday;
     }
 
-    public List<Lesson> getLessons() {
-        return lessons;
+    public int getWeek() {
+        return week;
+    }
+
+    public String getStart() {
+        return start;
+    }
+
+    public void setStart(String start) {
+        this.start = start;
+    }
+
+    public String getEnd() {
+        return end;
+    }
+
+    public void setEnd(String end) {
+        this.end = end;
     }
 }
+

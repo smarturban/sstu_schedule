@@ -1,28 +1,21 @@
 package com.ssu.schedule.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Document(collection = "faculties")
-@JsonIgnoreProperties({"university", "groups"})
 public class Faculty {
     @Id
-    @JsonProperty("faculty_id")
+    @JsonIgnore
     private String id;
 
-    @JsonProperty("faculty_name")
     private String name;
 
-    private String university;
-
-    private Map<String, Group> groups = new HashMap<>();
+    private List<Group> groups;
 
     public String getName() {
         return name;
@@ -32,12 +25,8 @@ public class Faculty {
         return id;
     }
 
-    public String getUniversity() {
-        return university;
-    }
-
     public Collection<Group> getGroups() {
-        return groups.values();
+        return groups;
     }
 
     public void setName(String name) {
@@ -48,17 +37,7 @@ public class Faculty {
         this.id = id;
     }
 
-    public void setUniversity(String university) {
-        this.university = university;
-    }
-
-    public void setGroups(ArrayList<Group> groups) {
-        for (Group group : groups) {
-            this.groups.put(group.getId(), group);
-        }
-    }
-
-    public Group getGroup(String id) {
-        return groups.get(id);
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 }

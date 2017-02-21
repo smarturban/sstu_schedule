@@ -1,22 +1,18 @@
 package com.ssu.schedule.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.ssu.schedule.jsonview.View;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
+import java.util.List;
 
+@Document(collection = "groups")
 public class Group {
-    @JsonView({View.GROUP.class})
-    @JsonProperty("group_id")
+    @Id
     private String id;
 
-    @JsonView({View.SCHEDULE.class, View.GROUP.class})
-    @JsonProperty("group_name")
     private String name;
 
-    @JsonView(View.SCHEDULE.class)
-    private ArrayList<Day> days = new ArrayList<>();
+    private List<Lesson> lessons;
 
     public String getId() {
         return id;
@@ -26,8 +22,8 @@ public class Group {
         return name;
     }
 
-    public ArrayList<Day> getDays() {
-        return days;
+    public List<Lesson> getLessons() {
+        return lessons;
     }
 
     public void setId(String id) {
@@ -38,7 +34,7 @@ public class Group {
         this.name = name;
     }
 
-    public void setDays(ArrayList<Day> days) {
-        this.days = days;
+    public void setLessons(List<Lesson> lessons) {
+        this.lessons = lessons;
     }
 }

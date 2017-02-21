@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface FacultyRepository extends MongoRepository<Faculty, String> {
     List<Faculty> findById(String id);
-    List<Faculty> findByName(String name);
-    List<Faculty> findByUniversity(String university);
 }

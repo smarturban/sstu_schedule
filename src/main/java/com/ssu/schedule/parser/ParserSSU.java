@@ -2,8 +2,7 @@ package com.ssu.schedule.parser;
 
 import com.ssu.schedule.model.*;
 import com.ssu.schedule.repository.FacultyRepository;
-import com.ssu.schedule.service.LocalStorage;
-import com.ssu.schedule.model.LessonTime;
+import com.ssu.schedule.repository.GroupRepository;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -12,18 +11,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class ParserSSU {
-    private static final String UNIVERSITY = "ssu";
+
+    private static final Logger log = LoggerFactory.getLogger(ParserSSU.class);
 
     @Value("${ssu.basicAuth.login}")
     private String login;
@@ -34,19 +37,25 @@ public class ParserSSU {
     @Value("${ssu.url}")
     private String url;
 
-    private final FacultyRepository facultyRepository;
-    private final LocalStorage storage;
+    @Value("${ssu.name}")
+    private String univerName;
 
-    private Time time = new Time();
+    @Value("${ssu.abbr}")
+    private String univerAbbr;
+
+    private final FacultyRepository facultyRepository;
+    private final GroupRepository groupRepository;
+
+    private TimeList timeList = new TimeList();
 
     @Autowired
-    public ParserSSU(FacultyRepository facultyRepository, LocalStorage storage) {
+    public ParserSSU(FacultyRepository facultyRepository, GroupRepository groupRepository) {
         this.facultyRepository = facultyRepository;
-        this.storage = storage;
+        this.groupRepository = groupRepository;
     }
 
-    @PostConstruct
-    public void afterPropertiesSet() throws Exception {
+    @Scheduled(cron = "0 0 12 * * ?")
+    private void getCurrentSchedule() {
         OkHttpClient client = new OkHttpClient();
         String credentials = Credentials.basic(login, password);
 
@@ -60,16 +69,16 @@ public class ParserSSU {
                     .build();
 
             Response response = client.newCall(request).execute();
-            parseNameOfFaculties(XML.toJSONObject(response.body().string()));
+            List<Faculty> faculties = parseNameOfFaculties(XML.toJSONObject(response.body().string()));
 
             // Get information about a groups for each faculty
-            for (Faculty faculty : storage.getFaculties()) {
+            for (Faculty faculty : faculties) {
                 request = requestBuilder
                         .url(url + "?dep=" + faculty.getId())
                         .build();
 
                 response = client.newCall(request).execute();
-                parseFaculties(faculty, XML.toJSONObject(response.body().string()));
+                parseFaculty(faculty, XML.toJSONObject(response.body().string()));
             }
 
         } catch (IOException | JSONException e) {
@@ -77,9 +86,9 @@ public class ParserSSU {
         }
     }
 
-    private void parseNameOfFaculties(JSONObject object) throws JSONException {
+    private List<Faculty> parseNameOfFaculties(JSONObject object) throws JSONException {
         JSONArray faculties = object.getJSONObject("departments").getJSONArray("department");
-        ArrayList<Faculty> facultyStorage = new ArrayList<>();
+        List<Faculty> facultyStorage = new ArrayList<>();
 
         for (int i = 0; i < faculties.length(); i++) {
             JSONObject item = faculties.getJSONObject(i);
@@ -87,19 +96,17 @@ public class ParserSSU {
             Faculty faculty = new Faculty();
             faculty.setId(item.getString("id"));
             faculty.setName(item.getString("name"));
-            faculty.setUniversity(UNIVERSITY);
 
             facultyStorage.add(faculty);
             facultyRepository.save(faculty);
         }
 
-        storage.setFaculties(facultyStorage);
+        return facultyStorage;
     }
 
-    private void parseFaculties(Faculty faculty, JSONObject object) throws JSONException {
+    private void parseFaculty(Faculty faculty, JSONObject object) throws JSONException {
         JSONArray groupItems = object.getJSONObject("schedule").getJSONArray("group");
-
-        ArrayList<Group> groups = new ArrayList<>();
+        List<Group> groups = new ArrayList<>();
 
         for (int i = 0; i < groupItems.length(); i++) {
             Group group = new Group();
@@ -107,24 +114,23 @@ public class ParserSSU {
             String number = groupItem.getString("number");
 
             group.setName(number);
-            group.setId(UNIVERSITY + "_" + faculty.getId() + "_" + number);
+            group.setId(faculty.getId());
 
-            ArrayList<Day> days = parseDays(groupItem.getJSONArray("day"));
-            group.setDays(days);
+            List<Lesson> lessons = parseDays(groupItem.getJSONArray("day"));
+            group.setLessons(lessons);
             groups.add(group);
         }
 
-        faculty.setGroups(groups);
-        storage.setFaculty(faculty);
+        groupRepository.save(groups);
     }
 
-    private ArrayList<Day> parseDays(JSONArray jsonDays) throws JSONException {
-        ArrayList<Day> days = new ArrayList<>();
+
+    private List<Lesson> parseDays(JSONArray jsonDays) throws JSONException {
+        List<Lesson> lessonsPerDay = new ArrayList<>();
 
         for (int i = 0; i < jsonDays.length(); i++) {
             JSONArray lessonArray = new JSONArray();
             JSONObject obj = jsonDays.getJSONObject(i);
-            Day day = new Day();
 
             try {
                 lessonArray = obj.getJSONObject("lessons").getJSONArray("lesson");
@@ -134,18 +140,17 @@ public class ParserSSU {
                 }
             }
 
-            day.setId(obj.getString("id"));
-            day.setLessons(parseLessons(lessonArray));
-            days.add(day);
+            lessonsPerDay.addAll(parseLessons(obj.getString("id"), lessonArray));
         }
 
-        return days;
+        return lessonsPerDay;
     }
 
-    private ArrayList<Lesson> parseLessons(JSONArray jsonLessons) throws JSONException {
+    private ArrayList<Lesson> parseLessons(String id, JSONArray jsonLessons) throws JSONException {
         ArrayList<Lesson> lessons = new ArrayList<>();
 
         for (int i = 0; i < jsonLessons.length(); i++) {
+            Day day = new Day();
             Lesson lesson = new Lesson();
             Teacher teacher = new Teacher();
             Auditory auditory = new Auditory();
@@ -157,36 +162,39 @@ public class ParserSSU {
 
             switch (jsonLesson.getString("weektype")) {
                 case "nom":
-                    lesson.setParity(1);
+                    day.setWeek(2);
                     break;
                 case "denom":
-                    lesson.setParity(2);
+                    day.setWeek(1);
                     break;
             }
+
+            day.setWeekday(Integer.parseInt(id));
+            lesson.setDate(day);
 
             switch (jsonLesson.getString("type")) {
                 case "practice":
-                    lesson.setType(0);
+                    lesson.setType("Практика");
                     break;
             }
 
-            try {
-                LessonTime lessonTime = time.getLessonTime(Integer.parseInt(jsonLesson.getString("num")) - 1);
-                lesson.setTimeStart(lessonTime.getStart());
-                lesson.setTimeEnd(lessonTime.getEnd());
-            } catch (Exception e) {
-                // For >= 8 lessons. Bullshit...
+            int index = Integer.parseInt(jsonLesson.getString("num")) - 1;
+            Time time = new Time();
+
+            if (index < timeList.size()) {
+                LessonTime lessonTime = timeList.getLessonTime(index);
+                time.setStart(lessonTime.getStart());
+                time.setEnd(lessonTime.getEnd());
             }
 
+            lesson.setTime(time);
+
             JSONObject jsonTeacher = jsonLesson.getJSONObject("teacher");
-            teacher.setFirstName(jsonTeacher.getString("name"));
-            teacher.setMiddleName(jsonTeacher.getString("patronim"));
-            teacher.setLastName(jsonTeacher.getString("lastname"));
-            teacher.setFullName(jsonTeacher.getString("compiled_fio"));
+            teacher.setName(jsonTeacher.getString("compiled_fio"));
             lesson.setTeachers(Collections.singletonList(teacher));
 
             auditory.setName(jsonLesson.getString("place"));
-            lesson.setAuditories(Collections.singletonList(auditory));
+            lesson.setAudiences(Collections.singletonList(auditory));
 
             lessons.add(lesson);
         }
