@@ -36,7 +36,7 @@ public class ScheduleController {
         List<Faculty> faculties = facultyRepository.findAll();
 
         for (Faculty faculty : faculties) {
-            List<Group> groups = groupRepository.findAll(faculty.getId());
+            List<Group> groups = groupRepository.findAllByFacultyId(faculty.getId());
             faculty.setGroups(groups);
         }
 

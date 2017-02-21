@@ -54,7 +54,8 @@ public class ParserSSU {
         this.groupRepository = groupRepository;
     }
 
-    @Scheduled(cron = "0 0 12 * * ?")
+    //@Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(fixedDelay = 1000, initialDelay = 0)
     private void getCurrentSchedule() {
         OkHttpClient client = new OkHttpClient();
         String credentials = Credentials.basic(login, password);
@@ -114,7 +115,7 @@ public class ParserSSU {
             String number = groupItem.getString("number");
 
             group.setName(number);
-            group.setId(faculty.getId());
+            group.setFacultyId(faculty.getId());
 
             List<Lesson> lessons = parseDays(groupItem.getJSONArray("day"));
             group.setLessons(lessons);
