@@ -11,8 +11,7 @@ public class Lesson {
 
     private String type = "Лекция";
 
-    @JsonProperty("subject")
-    private String title;
+    private String subject = "Название предмета";
 
     private Time time;
 
@@ -33,10 +32,6 @@ public class Lesson {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public List<Teacher> getTeachers() {
@@ -67,15 +62,19 @@ public class Lesson {
         return id;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
     public Time getTime() {
         return time;
     }
 
     public void setTime(Time time) {
         this.time = time;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 }

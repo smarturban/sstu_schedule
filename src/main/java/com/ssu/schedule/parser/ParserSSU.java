@@ -54,8 +54,7 @@ public class ParserSSU {
         this.groupRepository = groupRepository;
     }
 
-    //@Scheduled(cron = "0 0 12 * * ?")
-    @Scheduled(fixedDelay = 1000, initialDelay = 0)
+    @Scheduled(cron = "0 0 12 * * ?")
     private void getCurrentSchedule() {
         OkHttpClient client = new OkHttpClient();
         String credentials = Credentials.basic(login, password);
@@ -64,6 +63,8 @@ public class ParserSSU {
                 .addHeader("Authorization", credentials);
 
         try {
+            log.debug("Update schedule started");
+
             // Get information about a faculties
             Request request = requestBuilder
                     .url(url)
@@ -81,6 +82,8 @@ public class ParserSSU {
                 response = client.newCall(request).execute();
                 parseFaculty(faculty, XML.toJSONObject(response.body().string()));
             }
+
+            log.debug("Update schedule successfully finished");
 
         } catch (IOException | JSONException e) {
             e.printStackTrace();
@@ -159,7 +162,7 @@ public class ParserSSU {
             JSONObject jsonLesson = jsonLessons.getJSONObject(i);
 
             lesson.setId(jsonLesson.getString("num"));
-            lesson.setTitle(jsonLesson.getString("name"));
+            lesson.setSubject(jsonLesson.getString("name"));
 
             switch (jsonLesson.getString("weektype")) {
                 case "nom":
