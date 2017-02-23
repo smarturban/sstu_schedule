@@ -28,19 +28,19 @@ public class ParserSSU {
 
     private static final Logger log = LoggerFactory.getLogger(ParserSSU.class);
 
-    @Value("${ssu.basicAuth.login}")
+    @Value("${university.basicAuth.login}")
     private String login;
 
-    @Value("${ssu.basicAuth.password}")
+    @Value("${university.basicAuth.password}")
     private String password;
 
-    @Value("${ssu.url}")
+    @Value("${university.url}")
     private String url;
 
-    @Value("${ssu.name}")
+    @Value("${university.name}")
     private String univerName;
 
-    @Value("${ssu.abbr}")
+    @Value("${university.abbr}")
     private String univerAbbr;
 
     private final FacultyRepository facultyRepository;

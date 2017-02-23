@@ -1,8 +1,10 @@
-ssu:
-  url: http://www.sgu.ru/exchange/schedule_ssu_4vlad.php
+university:
+  abbr: {university short name}
+  name: {university name}
+  url: {export url}
   basicAuth:
-    login: somelogin
-    password: somepassword
+    login: {login}
+    password: {password}
 
 spring:
   data:
@@ -10,3 +12,9 @@ spring:
       host: localhost
       port: 27017
       database: schedule
+
+import:
+  url: http://api.rvuzov.ru/v2/import/file
+  type: json
+  token: {your token}
+  report: {your report email}

@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.ssu.schedule.model.Faculty;
 import com.ssu.schedule.model.Group;
 import com.ssu.schedule.model.University;
-import com.ssu.schedule.parser.ParserSSU;
 import com.ssu.schedule.repository.FacultyRepository;
 import com.ssu.schedule.repository.GroupRepository;
 import okhttp3.*;
@@ -31,10 +30,10 @@ public class ScheduleController {
     @Autowired
     private GroupRepository groupRepository;
 
-    @Value("${ssu.name}")
+    @Value("${university.name}")
     private String univerName;
 
-    @Value("${ssu.abbr}")
+    @Value("${university.abbr}")
     private String univerAbbr;
 
     @Value("${import.url}")
