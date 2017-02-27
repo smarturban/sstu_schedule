@@ -45,6 +45,7 @@ public class ParserSSU {
 
     private final FacultyRepository facultyRepository;
     private final GroupRepository groupRepository;
+    private final OkHttpClient client;
 
     private TimeList timeList = new TimeList();
 
@@ -52,11 +53,11 @@ public class ParserSSU {
     public ParserSSU(FacultyRepository facultyRepository, GroupRepository groupRepository) {
         this.facultyRepository = facultyRepository;
         this.groupRepository = groupRepository;
+        this.client = new OkHttpClient();
     }
 
     @Scheduled(cron = "0 0 12 * * ?")
     private void getCurrentSchedule() {
-        OkHttpClient client = new OkHttpClient();
         String credentials = Credentials.basic(login, password);
 
         Request.Builder requestBuilder = new Request.Builder()
@@ -150,8 +151,8 @@ public class ParserSSU {
         return lessonsPerDay;
     }
 
-    private ArrayList<Lesson> parseLessons(String id, JSONArray jsonLessons) throws JSONException {
-        ArrayList<Lesson> lessons = new ArrayList<>();
+    private List<Lesson> parseLessons(String id, JSONArray jsonLessons) throws JSONException {
+        List<Lesson> lessons = new ArrayList<>();
 
         for (int i = 0; i < jsonLessons.length(); i++) {
             Day day = new Day();
@@ -176,10 +177,8 @@ public class ParserSSU {
             day.setWeekday(Integer.parseInt(id));
             lesson.setDate(day);
 
-            switch (jsonLesson.getString("type")) {
-                case "practice":
-                    lesson.setType("Практика");
-                    break;
+            if (jsonLesson.getString("type").equals("practice")) {
+                lesson.setType("Практика");
             }
 
             int index = Integer.parseInt(jsonLesson.getString("num")) - 1;

@@ -48,6 +48,15 @@ public class ScheduleController {
     @Value("${import.type}")
     private String importType;
 
+    private final OkHttpClient client;
+    private final Gson gson;
+
+    @Autowired
+    public ScheduleController() {
+        this.client = new OkHttpClient();
+        this.gson = new GsonBuilder().create();
+    }
+
     @RequestMapping("/")
     public University getUniversity() {
         return getLastSchedule();
@@ -57,9 +66,6 @@ public class ScheduleController {
     public void postScheduleToService() {
         try {
 
-            OkHttpClient client = new OkHttpClient();
-
-            Gson gson = new GsonBuilder().create();
             String schedule = gson.toJson(getLastSchedule());
 
             RequestBody requestBody = new MultipartBody.Builder()
