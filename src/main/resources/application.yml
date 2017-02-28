@@ -1,20 +1,18 @@
 university:
-  abbr: {university short name}
-  name: {university name}
-  url: {export url}
+  abbr: ${UNIVERSITY_ABBR}
+  name: ${UNIVERSITY_NAME}
+  url: ${UNIVERSITY_URL}
   basicAuth:
-    login: {login}
-    password: {password}
+    login: ${UNIVERSITY_LOGIN}
+    password: ${UNIVERSITY_PASSWORD}
 
 spring:
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: schedule
+      uri: ${MONGODB_URI}
 
 import:
   url: http://api.rvuzov.ru/v2/import/file
   type: json
-  token: {your token}
-  report: {your report email}
+  token: ${IMPORT_TOKEN}
+  report: ${IMPORT_REPORT}
