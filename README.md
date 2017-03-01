@@ -7,7 +7,7 @@
 
 Contact https://vk.com/rvuzov for access token.
 
-####For deploying of Heroku please user environment variable!
+####For deploying of Heroku please user environment variables!
 
 About ``application.yml``:
 <br><br>
