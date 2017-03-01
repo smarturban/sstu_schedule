@@ -43,6 +43,9 @@ public class ParserSSU {
     @Value("${university.abbr}")
     private String univerAbbr;
 
+    @Autowired
+    private OkHttpClient httpClient;
+
     private final FacultyRepository facultyRepository;
     private final GroupRepository groupRepository;
 
@@ -54,9 +57,8 @@ public class ParserSSU {
         this.groupRepository = groupRepository;
     }
 
-    @Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(cron = "0 0 0 ? * MON-FRI")
     private void getCurrentSchedule() {
-        OkHttpClient client = new OkHttpClient();
         String credentials = Credentials.basic(login, password);
 
         Request.Builder requestBuilder = new Request.Builder()
@@ -70,7 +72,7 @@ public class ParserSSU {
                     .url(url)
                     .build();
 
-            Response response = client.newCall(request).execute();
+            Response response = httpClient.newCall(request).execute();
             List<Faculty> faculties = parseNameOfFaculties(XML.toJSONObject(response.body().string()));
 
             // Get information about a groups for each faculty
@@ -79,7 +81,7 @@ public class ParserSSU {
                         .url(url + "?dep=" + faculty.getId())
                         .build();
 
-                response = client.newCall(request).execute();
+                response = httpClient.newCall(request).execute();
                 parseFaculty(faculty, XML.toJSONObject(response.body().string()));
             }
 
@@ -116,7 +118,9 @@ public class ParserSSU {
             Group group = new Group();
             JSONObject groupItem = groupItems.getJSONObject(i);
             String number = groupItem.getString("number");
+            String groupId = faculty.getId() + "_" + number;
 
+            group.setId(groupId);
             group.setName(number);
             group.setFacultyId(faculty.getId());
 
@@ -127,7 +131,6 @@ public class ParserSSU {
 
         groupRepository.save(groups);
     }
-
 
     private List<Lesson> parseDays(JSONArray jsonDays) throws JSONException {
         List<Lesson> lessonsPerDay = new ArrayList<>();
