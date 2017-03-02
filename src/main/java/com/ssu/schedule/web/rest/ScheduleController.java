@@ -30,6 +30,12 @@ public class ScheduleController {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private OkHttpClient httpClient;
+
+    @Autowired
+    private Gson gson;
+
     @Value("${university.name}")
     private String univerName;
 
@@ -53,13 +59,9 @@ public class ScheduleController {
         return getLastSchedule();
     }
 
-    @Scheduled(cron = "0 20 12 1/1 * ?")
+    @Scheduled(cron = "0 20 0 ? * MON-FRI")
     public void postScheduleToService() {
         try {
-
-            OkHttpClient client = new OkHttpClient();
-
-            Gson gson = new GsonBuilder().create();
             String schedule = gson.toJson(getLastSchedule());
 
             RequestBody requestBody = new MultipartBody.Builder()
@@ -77,7 +79,7 @@ public class ScheduleController {
                     .build();
 
             log.debug("Publish schedule started. Content length: " + schedule.length());
-            Response response = client.newCall(request).execute();
+            Response response = httpClient.newCall(request).execute();
             log.debug(response.body().string());
 
         } catch (IOException e) {
