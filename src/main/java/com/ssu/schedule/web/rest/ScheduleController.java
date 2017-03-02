@@ -80,7 +80,6 @@ public class ScheduleController {
 
             log.debug("Publish schedule started. Content length: " + schedule.length());
             Response response = httpClient.newCall(request).execute();
-            System.out.println(response.body().string());
             log.debug(response.body().string());
 
         } catch (IOException e) {
