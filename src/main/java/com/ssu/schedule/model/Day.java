@@ -1,8 +1,8 @@
 package com.ssu.schedule.model;
 
 public class Day {
-    private String start = "01.09.2017";
-    private String end = "01.07.2018";
+    private String start = "01.01.2018";
+    private String end = "01.07.2050";
     private int weekday;
 
     private int week = 0;
