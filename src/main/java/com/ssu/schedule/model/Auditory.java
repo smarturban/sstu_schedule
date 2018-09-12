@@ -1,8 +1,5 @@
 package com.ssu.schedule.model;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "auditory")
 public class Auditory {
 
     private String name;

@@ -1,8 +1,6 @@
 package com.ssu.schedule.parser;
 
 import com.ssu.schedule.model.*;
-import com.ssu.schedule.repository.FacultyRepository;
-import com.ssu.schedule.repository.GroupRepository;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,15 +40,11 @@ public class SsuScheduleParserService {
     private String univerAbbr;
 
     private final OkHttpClient httpClient;
-    private final FacultyRepository facultyRepository;
-    private final GroupRepository groupRepository;
+
     private final TimeList timeList;
 
     @Autowired
-    public SsuScheduleParserService(FacultyRepository facultyRepository, GroupRepository groupRepository,
-                                    OkHttpClient httpClient) {
-        this.facultyRepository = facultyRepository;
-        this.groupRepository = groupRepository;
+    public SsuScheduleParserService(OkHttpClient httpClient) {
         this.httpClient = httpClient;
         this.timeList = new TimeList();
     }
@@ -110,7 +104,6 @@ public class SsuScheduleParserService {
             facultyStorage.add(faculty);
         }
 
-        facultyRepository.save(facultyStorage);
         return facultyStorage;
     }
 
@@ -133,7 +126,6 @@ public class SsuScheduleParserService {
             groups.add(group);
         }
 
-        groupRepository.save(groups);
         return groups;
     }
 

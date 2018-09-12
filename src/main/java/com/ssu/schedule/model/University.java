@@ -1,12 +1,10 @@
 package com.ssu.schedule.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Document(collection = "universities")
 public class University {
     @JsonProperty("name")
     private String name;

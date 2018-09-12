@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class StudifyPostService {
@@ -35,6 +39,9 @@ public class StudifyPostService {
     @Value("${import.type}")
     private String importType;
 
+    @Value("${import.scheduleDir}")
+    private String scheduleDir;
+
     private final OkHttpClient httpClient;
 
     private final Gson gson;
@@ -53,6 +60,8 @@ public class StudifyPostService {
         try {
             University currentSchedule = ssuScheduleParserService.getSchedule();
             String schedule = gson.toJson(currentSchedule);
+
+            saveToFile(schedule);
 
             RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
@@ -77,5 +86,14 @@ public class StudifyPostService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveToFile(String schedule) throws IOException {
+        LocalDateTime now = LocalDateTime.now();
+        String fileName = now.format(DateTimeFormatter.ISO_DATE_TIME);
+        String filePath = String.format("%s/schedule-%s.json", scheduleDir, fileName);
+
+        Files.createFile(Paths.get(filePath));
+        Files.write(Paths.get(filePath), schedule.getBytes());
     }
 }

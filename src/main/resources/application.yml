@@ -6,13 +6,9 @@ university:
     login: ${UNIVERSITY_LOGIN}
     password: ${UNIVERSITY_PASSWORD}
 
-spring:
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-
 import:
   url: http://api.rvuzov.ru/v2/import/file
   type: json
   token: ${IMPORT_TOKEN}
   report: ${IMPORT_REPORT}
+  scheduleDir: ${SCHEDULE_DIR}
