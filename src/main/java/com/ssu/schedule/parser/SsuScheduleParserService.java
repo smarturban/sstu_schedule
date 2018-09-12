@@ -15,18 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Component
-public class ParserSSU {
-
-    private static final Logger log = LoggerFactory.getLogger(ParserSSU.class);
+@Service
+public class SsuScheduleParserService {
+    private static final Logger log = LoggerFactory.getLogger(SsuScheduleParserService.class);
 
     @Value("${university.basicAuth.login}")
     private String login;
@@ -43,29 +41,31 @@ public class ParserSSU {
     @Value("${university.abbr}")
     private String univerAbbr;
 
-    @Autowired
-    private OkHttpClient httpClient;
-
+    private final OkHttpClient httpClient;
     private final FacultyRepository facultyRepository;
     private final GroupRepository groupRepository;
-
-    private TimeList timeList = new TimeList();
+    private final TimeList timeList;
 
     @Autowired
-    public ParserSSU(FacultyRepository facultyRepository, GroupRepository groupRepository) {
+    public SsuScheduleParserService(FacultyRepository facultyRepository, GroupRepository groupRepository,
+                                    OkHttpClient httpClient) {
         this.facultyRepository = facultyRepository;
         this.groupRepository = groupRepository;
+        this.httpClient = httpClient;
+        this.timeList = new TimeList();
     }
 
-    @Scheduled(cron = "0 0 0 ? * MON-FRI")
-    private void getCurrentSchedule() {
-        String credentials = Credentials.basic(login, password);
+    public University getSchedule() {
+        University university = new University();
+        university.setName(univerName);
+        university.setAbbr(univerAbbr);
 
+        String credentials = Credentials.basic(login, password);
         Request.Builder requestBuilder = new Request.Builder()
                 .addHeader("Authorization", credentials);
 
         try {
-            log.debug("Update schedule started");
+            log.info("Update schedule started");
 
             // Get information about a faculties
             Request request = requestBuilder
@@ -82,14 +82,18 @@ public class ParserSSU {
                         .build();
 
                 response = httpClient.newCall(request).execute();
-                parseFaculty(faculty, XML.toJSONObject(response.body().string()));
+                List<Group> groups = parseGroups(faculty, XML.toJSONObject(response.body().string()));
+                faculty.setGroups(groups);
             }
 
-            log.debug("Update schedule successfully finished");
+            university.setFaculties(faculties);
 
+            log.info("Update schedule successfully finished");
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
+
+        return university;
     }
 
     private List<Faculty> parseNameOfFaculties(JSONObject object) throws JSONException {
@@ -104,13 +108,13 @@ public class ParserSSU {
             faculty.setName(item.getString("name"));
 
             facultyStorage.add(faculty);
-            facultyRepository.save(faculty);
         }
 
+        facultyRepository.save(facultyStorage);
         return facultyStorage;
     }
 
-    private void parseFaculty(Faculty faculty, JSONObject object) throws JSONException {
+    private List<Group> parseGroups(Faculty faculty, JSONObject object) throws JSONException {
         JSONArray groupItems = object.getJSONObject("schedule").getJSONArray("group");
         List<Group> groups = new ArrayList<>();
 
@@ -130,6 +134,7 @@ public class ParserSSU {
         }
 
         groupRepository.save(groups);
+        return groups;
     }
 
     private List<Lesson> parseDays(JSONArray jsonDays) throws JSONException {

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class Config {
     @Bean
     public OkHttpClient httpClient() {
-        return new OkHttpClient();
+        return new OkHttpClient.Builder().build();
     }
 
     @Bean
